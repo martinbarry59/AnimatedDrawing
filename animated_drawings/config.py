@@ -81,17 +81,13 @@ class SceneConfig():
             assert False, msg
 
         # config files for characters, driving motions, and retargeting
-        self.animated_characters: List[Tuple[CharacterConfig, RetargetConfig, MotionConfig]] = []
+        self.animated_characters: List[Tuple[CharacterConfig]] = []
 
         each: Dict[str, str]
         for each in scene_cfg['ANIMATED_CHARACTERS']:
             char_cfg_fn: str = each['character_cfg']
-            motion_cfg_fn: str = each['motion_cfg']
-            retarget_cfg_fn: str = each['retarget_cfg']
             self.animated_characters.append((
                 CharacterConfig(char_cfg_fn),
-                RetargetConfig(retarget_cfg_fn),
-                MotionConfig(motion_cfg_fn)
             ))
 
 
@@ -411,14 +407,6 @@ class MotionConfig():
             assert False, msg
 
         # validate bvh_p
-        try:
-            print(f'Loading BVH file from {motion_cfg["filepath"]}')
-            # exit()
-            self.bvh_p: Path = resolve_ad_filepath(motion_cfg['filepath'], 'bvh filepath')
-        except (AssertionError, ValueError) as e:
-            msg = f'Error validating bvh_p: {e}'
-            logging.critical(msg)
-            assert False, msg
 
     def validate_bvh(self, bvh_joint_names: List[str]) -> None:
         """ Performs all the validation steps that depend upon knowing the BVH joint names. This should be called once the BVH had been loaded."""

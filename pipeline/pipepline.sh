@@ -7,7 +7,7 @@ python image_to_annotations.py ../pipeline/inputs/robot.jpg  characters/robot
 sudo /home/martin-barry/Desktop/HES-SO/AnimatedDrawings/.venv/bin/torchserve --stop
 
 cd ../
-python mediapipe_test.py
+python live_demo.py
 
 cd pipeline/
 # python fix_annotations.py /home/martin-barry/Desktop/HES-SO/AnimatedDrawings/examples/characters/robot/

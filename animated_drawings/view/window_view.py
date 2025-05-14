@@ -6,9 +6,9 @@ from animated_drawings.view.view import View
 from animated_drawings.view.shaders.shader import Shader
 from animated_drawings.view.utils import get_projection_matrix
 from animated_drawings.utils import read_background_image
-from animated_drawings.model.scene import Scene
-from animated_drawings.model.camera import Camera
-from animated_drawings.model.transform import Transform
+from animated_drawings.model_live.scene import Scene
+from animated_drawings.model_live.camera import Camera
+from animated_drawings.model_live.transform import Transform
 from animated_drawings.config import ViewConfig
 import glfw
 import OpenGL.GL as GL

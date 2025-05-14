@@ -75,7 +75,8 @@ LANDMARK_NAMES = [
 ]
 
 VIRTUAL_JOINTS = {
-    "neck": ["left_shoulder", "right_shoulder", "nose"],  # neck = avg of shoulders + nose
+    # "neck": ["left_shoulder", "right_shoulder", "nose"],  # neck = avg of shoulders + nose
+    
     "torso": ["left_shoulder", "right_shoulder"],
     "hip": ["right_hip","left_hip"],
     "root": ["hip"],  # root = avg of torso and hip
@@ -161,17 +162,12 @@ try:
             view.render(scene)
             scene.progress_time(1/30)
             GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
-            # GL.glReadPixels(0, 0, width, height, GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, frame_data)
-            # GL.glFinish()  # ensure all GL rendering is done before reading
-            # image = frame_data[::-1, :, :].copy()
-            # w, h = scene.get_children()[0].img_dim, scene.get_children()[0].img_dim
+
             raw = GL.glReadPixels(0, 0, width, height, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE)
             image = np.frombuffer(raw, dtype=np.uint8).reshape((height, width, 4))
             ## mirror image
             image = cv2.flip(image, 0)
-            # # Read pixels from OpenGL framebuffer
-            # buffer = GL.glReadPixels(0, 0, w, h, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE)
-            # Convert to NumPy array
+
             char_image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB).astype(np.uint8)
             char_image =  np.rot90(char_image,3)
             char_image = cv2.resize(char_image, (width, height), interpolation=cv2.INTER_LINEAR)

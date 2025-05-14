@@ -221,12 +221,10 @@ class AnimatedDrawing(Transform, TimeManager):
     Afterwars, only the update() method needs to be called.
     """
 
-    def __init__(self, char_cfg: CharacterConfig, retarget_cfg: RetargetConfig, motion_cfg: MotionConfig):
+    def __init__(self, char_cfg: CharacterConfig):
         super().__init__()
 
         self.char_cfg: CharacterConfig = char_cfg
-
-        self.retarget_cfg: RetargetConfig = retarget_cfg
 
         self.img_dim: int = self.char_cfg.img_dim
 
@@ -243,7 +241,7 @@ class AnimatedDrawing(Transform, TimeManager):
         self.add_child(self.rig)
 
         # perform runtime checks for character pose, modify retarget config accordingly
-        self._modify_retargeting_cfg_for_character()
+        # self._modify_retargeting_cfg_for_character()
 
         self.joint_to_tri_v_idx:  Dict[str, npt.NDArray[np.int32]]
         self._initialize_joint_to_triangles_dict()
@@ -268,102 +266,8 @@ class AnimatedDrawing(Transform, TimeManager):
         self.live_root_position = [0,0,0]
         self.update()
 
-    def _modify_retargeting_cfg_for_character(self):
-        """
-        If the character is drawn in particular poses, the orientation-matching retargeting framework produce poor results.
-        Therefore, the retargeter config can specify a number of runtime checks and retargeting modifications to make if those checks fail.
-        """
-        print("doing the runtime checks for the character")
-        for position_test, target_joint_name, joint1_name, joint2_name in self.retarget_cfg.char_runtime_checks:
-            if position_test == 'above':
-                """ Checks whether target_joint is 'above' the vector from joint1 to joint2. If it's below, removes it.
-                This was added to account for head flipping when nose was below shoulders. """
 
-                # get joints 1, 2 and target joint
-                joint1 = self.rig.root_joint.get_transform_by_name(joint1_name)
-                if joint1 is None:
-                    msg = f'Could not find joint1 in runtime check: {joint1_name}'
-                    logging.critical(msg)
-                    assert False, msg
-                joint2 = self.rig.root_joint.get_transform_by_name(joint2_name)
-                if joint2 is None:
-                    msg = f'Could not find joint2 in runtime check: {joint2_name}'
-                    logging.critical(msg)
-                    assert False, msg
-                target_joint = self.rig.root_joint.get_transform_by_name(target_joint_name)
-                if target_joint is None:
-                    msg = f'Could not find target_joint in runtime check: {target_joint_name}'
-                    logging.critical(msg)
-                    assert False, msg
-
-                # get world positions
-                joint1_xyz = joint1.get_world_position()
-                joint2_xyz = joint2.get_world_position()
-                target_joint_xyz = target_joint.get_world_position()
-
-                # rotate target vector by inverse of test_vector angle. If then below x axis discard it.
-                test_vector = np.subtract(joint2_xyz, joint1_xyz)
-                target_vector = np.subtract(target_joint_xyz, joint1_xyz)
-                angle = math.atan2(test_vector[1], test_vector[0])
-                if (math.sin(-angle) * target_vector[0] + math.cos(-angle) * target_vector[1]) < 0:
-                    logging.info(f'char_runtime_check failed, removing {target_joint_name} from retargeter :{target_joint_name, position_test, joint1_name, joint2_name}')
-                    del self.retarget_cfg.char_joint_bvh_joints_mapping[target_joint_name]
-            else:
-                msg = f'Unrecognized char_runtime_checks position_test: {position_test}'
-                logging.critical(msg)
-                assert False, msg
-
-    def _initialize_retargeter_bvh(self, motion_cfg: MotionConfig, retarget_cfg: RetargetConfig):
-        """ Initializes the retargeter used to drive the animated character.  """
-
-        # initialize retargeter
-        self.retargeter = Retargeter(motion_cfg, retarget_cfg)
-
-        # validate the motion and retarget config files, now that we know char/bvh joint names
-        char_joint_names: List[str] = self.rig.root_joint.get_chain_joint_names()
-        bvh_joint_names = self.retargeter.bvh_joint_names
-        motion_cfg.validate_bvh(bvh_joint_names)
-        retarget_cfg.validate_char_and_bvh_joint_names(char_joint_names, bvh_joint_names)
-
-        # a shorter alias
-        char_bvh_root_offset: RetargetConfig.CharBvhRootOffset = self.retarget_cfg.char_bvh_root_offset
-
-        # compute ratio of character's leg length to bvh skel leg length
-        c_limb_length = 0
-        c_joint_groups: List[List[str]] = char_bvh_root_offset['char_joints']
-        for b_joint_group in c_joint_groups:
-            while len(b_joint_group) >= 2:
-                c_dist_joint = self.rig.root_joint.get_transform_by_name(b_joint_group[1])
-                c_prox_joint = self.rig.root_joint.get_transform_by_name(b_joint_group[0])
-                assert isinstance(c_dist_joint, AnimatedDrawingsJoint)
-                assert isinstance(c_prox_joint, AnimatedDrawingsJoint)
-                c_dist_joint_pos = c_dist_joint.get_world_position()
-                c_prox_joint_pos = c_prox_joint.get_world_position()
-                c_limb_length += np.linalg.norm(np.subtract(c_dist_joint_pos, c_prox_joint_pos))
-                b_joint_group.pop(0)
-
-        b_limb_length = 0
-        b_joint_groups: List[List[str]] = char_bvh_root_offset['bvh_joints']
-        for b_joint_group in b_joint_groups:
-            while len(b_joint_group) >= 2:
-                b_dist_joint = self.retargeter.bvh.root_joint.get_transform_by_name(b_joint_group[1])
-                b_prox_joint = self.retargeter.bvh.root_joint.get_transform_by_name(b_joint_group[0])
-                assert isinstance(b_dist_joint, Joint)
-                assert isinstance(b_prox_joint, Joint)
-                b_dist_joint_pos = b_dist_joint.get_world_position()
-                b_prox_joint_pos = b_prox_joint.get_world_position()
-                b_limb_length += np.linalg.norm(np.subtract(b_dist_joint_pos, b_prox_joint_pos))
-                b_joint_group.pop(0)
-
-        # compute character-bvh scale factor and send to retargeter
-        scale_factor = float(c_limb_length / b_limb_length)
-        projection_bodypart_group_for_offset = char_bvh_root_offset['bvh_projection_bodypart_group_for_offset']
-        self.retargeter.scale_root_positions_for_character(scale_factor, projection_bodypart_group_for_offset)
-
-        # compute the necessary orienations
-        for char_joint_name, (bvh_prox_joint_name, bvh_dist_joint_name) in self.retarget_cfg.char_joint_bvh_joints_mapping.items():
-            self.retargeter.compute_orientations(bvh_prox_joint_name, bvh_dist_joint_name, char_joint_name)
-
+ 
     def update(self):
         """
         This method receives the delta t, the amount of time to progress the character's internal time keeper.
@@ -379,15 +283,6 @@ class AnimatedDrawing(Transform, TimeManager):
         joint_depths = None
         
 
-        # root_position: npt.NDArray[np.float32]
-        # root_position = np.array([self.char_root_positions[frame_idx, 0], self.char_root_positions[frame_idx, 1], 0.0], dtype=np.float32)
-        # root_position += self.character_start_loc 
-        # frame_orientations, joint_depths, root_position = self.retargeter.get_retargeted_frame_data(self.get_time())
-        # root = np.array([
-        #         0 / self.char_cfg.img_width,
-        #         0 / self.char_cfg.img_height,  # flip Y
-        #         -0.5  # match their Z default
-        #     ])
         root = np.array([
                 0 / self.char_cfg.img_width,
                 0/ self.char_cfg.img_height,
@@ -434,22 +329,7 @@ class AnimatedDrawing(Transform, TimeManager):
             indices.append(self.joint_to_tri_v_idx.get(joint_name, np.array([], dtype=np.int32)))
 
         self.indices = np.hstack(indices)
-    # def _set_draw_indices(self, joint_depths: Dict[str, float]):
-
-    #     # sort segmentation groups by decreasing depth_driver's distance to camera
-    #     _bodypart_render_order: List[Tuple[int, np.float32]] = []
-    #     for idx, bodypart_group_dict in enumerate(self.retarget_cfg.char_bodypart_groups):
-    #         bodypart_depth: np.float32 = np.mean([joint_depths[joint_name] for joint_name in bodypart_group_dict['bvh_depth_drivers']])
-    #         _bodypart_render_order.append((idx, bodypart_depth))
-    #     _bodypart_render_order.sort(key=lambda x: float(x[1]))
-
-    #     # Add vertices belonging to joints in each segment group in the order they will be rendered
-    #     indices: List[npt.NDArray[np.int32]] = []
-    #     for idx, dist in _bodypart_render_order:
-    #         intra_bodypart_render_order = 1 if dist > 0 else -1  # if depth driver is behind plane, render bodyparts in reverse order
-    #         for joint_name in self.retarget_cfg.char_bodypart_groups[idx]['char_joints'][::intra_bodypart_render_order]:
-    #             indices.append(self.joint_to_tri_v_idx.get(joint_name, np.array([], dtype=np.int32)))
-    #     self.indices = np.hstack(indices)
+ 
 
     def _initialize_joint_to_triangles_dict(self) -> None:  # noqa: C901
         """
