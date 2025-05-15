@@ -1,5 +1,5 @@
 # Animated drawing live (inspired from [Meta](https://github.com/facebookresearch/AnimatedDrawings/tree/main))
-This repo is inspired by animted drawing by Meta. 
+This repo is inspired by animated drawing by Meta. 
 We used part of their code and the algorithm from [A Method for Animating Children's Drawings of the Human Figure](https://dl.acm.org/doi/10.1145/3592788).
 
 ## Installation
