@@ -409,6 +409,7 @@ class MotionConfig():
 
 
 
+
 class RetargetConfig():
 
     class BvhProjectionBodypartGroup(TypedDict):
