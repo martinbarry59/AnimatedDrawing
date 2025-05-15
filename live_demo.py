@@ -155,8 +155,8 @@ try:
             for child in scene.get_children():
                 child.live_angles = angles
                 ## fixed x,y position  start bottom left corner and so one for different characters
-                x = (char_n % 2) *  width - 150 + child.live_root_position[0]
-                y = (char_n // 2 ) * 1.2 * height - 350 + child.live_root_position[1]
+                x = (char_n % 2) *  width - 150 #+ adjusted_landmarks["root"][1]
+                y = (char_n // 2 ) * 1.2 * height - 350 #+ adjusted_landmarks["root"][0]
                 char_n += 1
                 child.live_root_position = np.array([x,y, 0])
 
