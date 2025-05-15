@@ -5,11 +5,10 @@ import yaml
 # List of Mediapipe Pose landmark names
 from typing import List, Dict
 import numpy as np
-from animated_drawings.config import Config, CharacterConfig, RetargetConfig, MotionConfig
-from animated_drawings.model_live.animated_drawing import AnimatedDrawing
-from typing import List, Tuple, Dict
+from animated_drawings.config import Config
+from typing import List, Dict
 from OpenGL import GL
-cfg: Config = Config('examples/config/mvc/rockandrollarmy.yaml')
+cfg: Config = Config('examples/config/mvc/multiple.yaml')
 # create view
 # from animated_drawings.view.view import View
 # view = View.create_view(cfg.view)
@@ -24,7 +23,7 @@ def scale_and_pad(frame, target_w, target_h):
     scale = min(target_w / w, target_h / h)
     new_w, new_h = int(w * scale), int(h * scale)
     resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
-
+    
     pad_left = (target_w - new_w) // 2
     pad_top = (target_h - new_h) // 2
 
@@ -152,13 +151,15 @@ try:
             view.clear_window()
             scene.update_transforms()
             
-            
+            char_n = 0
             for child in scene.get_children():
                 child.live_angles = angles
-                child.live_root_position = np.array([adjusted_landmarks["root"][0], adjusted_landmarks["root"][1], 0])
-                # child.rig.root_joint.set_position(root_position)
-                # child.rig.set_global_orientations(angles)
-                # child.update()
+                ## fixed x,y position  start bottom left corner and so one for different characters
+                x = (char_n % 2) *  width - 150
+                y = (char_n // 2 ) * 1.2 * height - 350
+                char_n += 1
+                child.live_root_position = np.array([x,y, 0])
+
             view.render(scene)
             scene.progress_time(1/30)
             GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
@@ -175,11 +176,11 @@ try:
             
 
             
-            frame = overlay_with_mask(frame, char_image , x=200, y=0)  # top-left corner
+            frame = overlay_with_mask(frame, char_image , x=0, y=0)  # top-left corner
         
-        scaled_frame = scale_and_pad(frame, 2 * width, 2 * height)
+        # scaled_frame = scale_and_pad(frame, 2 * width, 2 * height)
 
-        cv2.imshow("Mediapipe Pose with Named Landmarks", scaled_frame)
+        cv2.imshow("Mediapipe Pose with Named Landmarks", frame)
         if cv2.waitKey(1) & 0xFF == 27:  # ESC
             break
 

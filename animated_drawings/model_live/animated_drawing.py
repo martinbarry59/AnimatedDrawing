@@ -284,8 +284,8 @@ class AnimatedDrawing(Transform, TimeManager):
         
 
         root = np.array([
-                0 / self.char_cfg.img_width,
-                0/ self.char_cfg.img_height,
+                self.live_root_position[0] / self.char_cfg.img_width,
+                self.live_root_position[1]/ self.char_cfg.img_height,
                 -0.5  # optional z offset
             ])
         if self.live_angles:
@@ -514,7 +514,7 @@ class AnimatedDrawing(Transform, TimeManager):
         # initialize texture coordinates
         self.vertices[:, 6] = self.mesh['vertices'][:, 1]                        # u tex
         self.vertices[:, 7] = self.mesh['vertices'][:, 0]                        # v tex
-
+        
         # set per-joint triangle colors
         color_set: set[Tuple[np.float32, np.float32, np.float32]] = set()
         r = g = b = np.linspace(0, 1, 4, dtype=np.float32)

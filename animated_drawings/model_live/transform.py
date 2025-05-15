@@ -87,6 +87,7 @@ class Transform():
         return np.copy(self._world_transform)
 
     def set_scale(self, scale: float) -> None:
+        
         self._scale_m[:-1, :-1] = scale * np.identity(3, dtype=np.float32)
         self.dirty_bit = True
 

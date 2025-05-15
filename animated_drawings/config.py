@@ -26,6 +26,7 @@ class Config():
             user_cfg = defaultdict(dict, yaml.load(f, Loader=yaml.FullLoader) or {})  # pyright: ignore[reportUnknownMemberType]
 
         # overlay user specified mvc options onto base mvc, use to generate subconfig classes
+
         self.view: ViewConfig = ViewConfig({**base_cfg['view'], **user_cfg['view']})
         self.scene: SceneConfig = SceneConfig({**base_cfg['scene'], **user_cfg['scene']})
         self.controller: ControllerConfig = ControllerConfig({**base_cfg['controller'], **user_cfg['controller']})
@@ -406,18 +407,6 @@ class MotionConfig():
             logging.critical(msg)
             assert False, msg
 
-        # validate bvh_p
-
-    def validate_bvh(self, bvh_joint_names: List[str]) -> None:
-        """ Performs all the validation steps that depend upon knowing the BVH joint names. This should be called once the BVH had been loaded."""
-        try:
-            for prox_joint_name, dist_joint_name in self.forward_perp_joint_vectors:
-                assert prox_joint_name in bvh_joint_names, f'invalid prox_joint name in motion_cfg.forward_perp_joint_vectors: {prox_joint_name}'
-                assert dist_joint_name in bvh_joint_names, f'invalid dist_joint name in motion_cfg.forward_perp_joint_vectors: {dist_joint_name}'
-        except (AssertionError, ValueError) as e:
-            msg = f'Error validating forward_perp_joint_vector joints: {e}'
-            logging.critical(msg)
-            assert False, msg
 
 
 class RetargetConfig():
