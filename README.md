@@ -7,13 +7,14 @@ We used part of their code and the algorithm from [A Method for Animating Childr
 
 We *strongly* recommend activating a Python virtual environment prior to installing Animated Drawings Live.
 we recommand the use of the great [uv](https://github.com/astral-sh/uv) python library manager based on Rust. Then run the following commands:
-    ```bash
+
+```bash
         git clone git@github.com:martinbarry59/AnimatedDrawingLive.git
         # create and activate setup the virtualenv
         uv sync
         uv build
         uv pip install -e . 
-    ````
+````
 
 To be able to annotate the image you need to install your own container (we give you the .def file used for our own container). We locally used [Apptainer](https://apptainer.org/docs/admin/main/installation.html).
 if using Apptainer please use
