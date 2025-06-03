@@ -32,7 +32,8 @@ To get started, follow these steps:
 ````
 
 
-2. We set up a pipeline script that is end to end reading an image (put the image in the folder drawings/input_images/) and animate it live to use it please run (use the nameof image without extension only png now)
+2. We set up a pipeline script that is end to end. Reading an image (put the image in the folder drawings/input_images/) and animate it live.
+To use it please run ( name_of_image without extension only png now)
 
 ````bash
    cd scripts
