@@ -1,0 +1,3 @@
+scene:
+  ANIMATED_CHARACTERS:
+    - character_cfg: drawings/characters/robot/char_cfg.yaml

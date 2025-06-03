@@ -1,7 +1,7 @@
 *
 !.gitignore
-!.yaml
-!.jpg
+!*.yaml
+!*.jpg
 !*.def
 !*.sh
 !*.py

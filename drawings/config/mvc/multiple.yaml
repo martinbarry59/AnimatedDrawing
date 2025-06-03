@@ -1,0 +1,8 @@
+scene:
+  ANIMATED_CHARACTERS:
+    - character_cfg: drawings/characters/robot/char_cfg.yaml
+    - character_cfg: drawings/characters/char1/char_cfg.yaml
+    - character_cfg: drawings/characters/char2/char_cfg.yaml
+    - character_cfg: drawings/characters/char3/char_cfg.yaml
+view:
+  WINDOW_DIMENSIONS: [640, 480]
