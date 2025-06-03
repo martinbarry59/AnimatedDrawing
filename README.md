@@ -39,6 +39,7 @@ To get started, follow these steps:
    source pipeline.sh name_of_image
 ````
 (The Meta detection of skeleton and mask tends to have a lot of mistakes)
+
 3. To fix the mask use whatever image processing software you like the most (I use GIMP)
 4. To fix the skeleton run
 ````bash
