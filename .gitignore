@@ -6,4 +6,5 @@
 !*.sh
 !*.py
 !*.toml
+!*.properties
 !*/
